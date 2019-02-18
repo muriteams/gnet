@@ -10,6 +10,8 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 
-    ergmito
+    ergmito,
+    stats,
+    parallel
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1

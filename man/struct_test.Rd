@@ -3,23 +3,34 @@
 \name{struct_test}
 \alias{struct_test}
 \alias{struct_test.ergmito}
+\alias{struct_test.list}
 \alias{struct_test.formula}
 \title{Semiparametric test of structural dependence}
 \usage{
-struct_test(x, y, stat, R, ...)
+struct_test(x, y, stat, R, mc.cores = 2L, verbose = TRUE, ...)
 
-\method{struct_test}{ergmito}(x, y, stat, R, ...)
+\method{struct_test}{ergmito}(x, y, stat, R, mc.cores = 2L,
+  verbose = TRUE, ...)
 
-\method{struct_test}{formula}(x, y, stat, R, ergmito.args = list(), ...)
+\method{struct_test}{list}(x, y, stat, R, mc.cores = 2L,
+  verbose = TRUE, ergmito.args = list(), ...)
+
+\method{struct_test}{formula}(x, y, stat, R, mc.cores = 2L,
+  verbose = TRUE, ergmito.args = list(), ...)
 }
 \arguments{
 \item{x}{Either a model, or an \link[ergmito:ergmito]{ergmito::ergmito} fit.}
 
 \item{y}{A numeric vector of length \code{length(x)}}
 
-\item{stat}{Function that receives two arguments, a network and a scalar.}
+\item{stat}{Function that receives two arguments, a list of networks and
+a vector of the same length.}
 
 \item{R}{Integer. Number of replicates.}
+
+\item{mc.cores}{Passed to \link[parallel:mclapply]{parallel::mclapply}.}
+
+\item{verbose}{Logical. When \code{TRUE}, shows information during the execution.}
 
 \item{...}{(Ignored)}
 

@@ -2,4 +2,11 @@
 
 S3method(struct_test,ergmito)
 S3method(struct_test,formula)
+S3method(struct_test,list)
 export(struct_test)
+importFrom(ergmito,ergmito)
+importFrom(ergmito,new_rergmito)
+importFrom(ergmito,nnets)
+importFrom(parallel,mclapply)
+importFrom(stats,coef)
+importFrom(stats,update.formula)

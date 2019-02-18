@@ -1,28 +1,16 @@
----
-output: github_document
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
-)
-```
-
 [![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
-
 
 # gnet
 
-The goal of gnet is to ...
+The goal of gnet is to …
 
 ## Installation
 
-You can install the released version of gnet from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of gnet from
+[CRAN](https://CRAN.R-project.org) with:
 
 ``` r
 install.packages("gnet")
@@ -32,7 +20,7 @@ install.packages("gnet")
 
 This is a basic example which shows you how to solve a common problem:
 
-```{r example, cache=TRUE}
+``` r
 library(ergmito)
 library(gnet)
 
@@ -45,9 +33,10 @@ fun <- function(g, y) mean(sapply(g, function(z) summary(z~edges)) - y)
 mytest <- struct_test(nets ~ edges + balance, y = runif(100), R=1000, stat=fun)
 ```
 
-```{r hist}
+``` r
 # Looking at the distribution
 hist(mytest$stat, breaks=10, col="gray", border="transparent")
 abline(v = mytest$stat0, col="steelblue", lwd=2, lty="dashed")
 ```
 
+<img src="man/figures/README-hist-1.png" width="100%" />

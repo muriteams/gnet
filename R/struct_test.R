@@ -43,7 +43,8 @@ struct_test.ergmito <- function(x, y, stat, R, mc.cores = 2L, verbose = TRUE, ..
 
 
   # samplers
-  struct_test.(x$network, y = y, samplers = samplers, stat = stat, R = R, ...)
+  struct_test.(x$network, y = y, samplers = samplers, stat = stat, R = R,
+               mc.cores = mc.cores, ...)
 
 }
 

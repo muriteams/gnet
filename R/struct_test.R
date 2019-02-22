@@ -7,15 +7,27 @@
 #' a vector of the same length.
 #' @param R Integer. Number of replicates.
 #' @param mc.cores Passed to [parallel::mclapply].
+#' @param alternative String character, either `"two.sided"`, `"smaller"`, or
+#' `"greater"`.
 #' @param verbose Logical. When `TRUE`, shows information during the execution.
 #' @param ... (Ignored)
 #'
 #' @export
-struct_test <- function(x, y, stat,  R, mc.cores = 2L, verbose = TRUE, ...) UseMethod("struct_test")
+struct_test <- function(
+  x, y, stat,  R, mc.cores = 2L, verbose = TRUE,
+  alternative = "two.sided",
+  ...
+  ) {
+  UseMethod("struct_test")
+}
 
 #' @export
 #' @rdname struct_test
-struct_test.ergmito <- function(x, y, stat, R, mc.cores = 2L, verbose = TRUE, ...) {
+struct_test.ergmito <- function(
+  x, y, stat, R, mc.cores = 2L, verbose = TRUE,
+  alternative = "two.sided",
+  ...
+  ) {
 
   n     <- ergmito::nnets(x)
   sizes <- ergmito::nvertex(x)
@@ -31,26 +43,25 @@ struct_test.ergmito <- function(x, y, stat, R, mc.cores = 2L, verbose = TRUE, ..
 
   # Generating the sampler
   samplers <- parallel::mclapply(seq_len(n), function(i) {
-    ans <- ergmito::new_rergmito(
+    ergmito::new_rergmito(
       model = netmodel,
       theta = stats::coef(x)
     )
-
-    ans$size <- sizes[i]
-
-    ans
   }, mc.cores = mc.cores)
 
 
   # samplers
   struct_test.(x$network, y = y, samplers = samplers, stat = stat, R = R,
-               mc.cores = mc.cores, ...)
+               mc.cores = mc.cores, verbose = verbose, alternative = alternative, ...)
 
 }
 
 #' @export
 #' @rdname struct_test
-struct_test.list <- function(x, y, stat, R, mc.cores = 2L, verbose = TRUE, ergmito.args = list(), ...) {
+struct_test.list <- function(
+  x, y, stat, R, mc.cores = 2L, verbose = TRUE,
+  alternative = "two.sided", ergmito.args = list(), ...
+  ) {
 
   test <- which(!sapply(x, inherits, "ergmito_sampler"))
   if (length(test))
@@ -58,12 +69,14 @@ struct_test.list <- function(x, y, stat, R, mc.cores = 2L, verbose = TRUE, ergmi
          call. = FALSE)
 
   struct_test.(
-    g        = lapply(x, "[[", "network0"),
-    y        = y,
-    samplers = x,
-    stat     = stat,
-    R        = R,
+    g           = lapply(x, "[[", "network0"),
+    y           = y,
+    samplers    = x,
+    stat        = stat,
+    R           = R,
     mc.cores    = mc.cores,
+    verbose     = verbose,
+    alternative = alternative,
     ...
     )
 
@@ -72,33 +85,37 @@ struct_test.list <- function(x, y, stat, R, mc.cores = 2L, verbose = TRUE, ergmi
 #' @export
 #' @param ergmito.args A list with arguments passed to [ergmito::ergmito].
 #' @rdname  struct_test
-struct_test.formula <- function(x, y, stat, R, mc.cores = 2L, verbose = TRUE, ergmito.args = list(), ...) {
+struct_test.formula <- function(
+  x, y, stat, R, mc.cores = 2L, verbose = TRUE,
+  alternative = "two.sided", ergmito.args = list(), ...
+  ) {
 
   # Estimating the ergmito
   ans <- do.call(ergmito::ergmito, c(list(model = x), ergmito.args))
 
   # Calling the function
-  struct_test.ergmito(ans, y, stat, R, mc.cores = mc.cores, ...)
+  struct_test.ergmito(ans, y, stat, R, mc.cores = mc.cores, verbose = verbose,
+                      alternative = alternative, ...)
 
 }
 
-struct_test. <- function(g, y, samplers, stat, R, mc.cores, ...) {
+struct_test. <- function(g, y, samplers, stat, R, mc.cores, alternative, ...) {
 
   # Step 0: Computing observed statistic
-  s0 <- stat(g, y)
+  t0 <- stat(g, y)
 
   # Step 1: Create the output vector
-  ans <- vector("numeric", R)
+  t <- matrix(NA, nrow = R, ncol = length(t0), dimnames = list(NULL, names(t0)))
 
-  # debug(stat)
+  seed <- .Random.seed
 
   # Step 2: Iterative steps
   for (i in 1L:R) {
 
     # Generating new random sample.
-    ans[i] <- stat(
+    t[i, ] <- stat(
       parallel::mclapply(
-        samplers, function(s) s$sample(1L, s$size)[[1L]],
+        samplers, function(s) s$sample(1L, s$sizes[1L])[[1L]],
         mc.cores = mc.cores
         ),
       y
@@ -106,10 +123,59 @@ struct_test. <- function(g, y, samplers, stat, R, mc.cores, ...) {
 
   }
 
-  list(
-    stat     = ans,
-    stat0    = s0,
-    samplers = samplers
+  # Identifying complete obs
+  cobs <- which(complete.cases(t))
+
+  # Calculating p-value
+  if (alternative == "two.sided") {
+
+    pvalue <- colMeans(t0 < t[cobs,,drop=FALSE])
+    pvalue <- ifelse(pvalue > .5, 1 - pvalue, pvalue)*2
+
+  } else if (alternative == "less") {
+
+    pvalue <- colMeans(t0 < t[cobs,,drop=FALSE])
+
+  } else if (alternative == "greater") {
+
+    pvalue <- colMeans(t0 > t[cobs,,drop=FALSE])
+
+  }
+
+  # pval <- colMeans(t0 <= t)
+  # pval <- ifelse(pval > .1, 1-pval, pval)*2
+
+  structure(
+    list(
+      t           = t,
+      t0          = t0,
+      pvalue      = pvalue,
+      alternative = alternative,
+      R           = R,
+      samplers    = samplers,
+      call        = sys.call(),
+      seed        = seed,
+      n           = length(samplers),
+      stat        = stat,
+      obs.used    = cobs
+    ),
+    class = "gnet_struct_test"
   )
+
+}
+
+#' @export
+#' @rdname struct_test
+print.gnet_struct_test <- function(x, ...) {
+
+  cat("Test of structural association between a network and a graph level outcome\n")
+  cat(sprintf("# of obs: %i\n# of replicates: %i (%i used)\n", x$n, x$R, length(x$obs.used)))
+  cat("Alternative: %s\n", x$alternative)
+  cat(sprintf(
+    "S[%i] s(obs): %6.4f s(sim): %6.4f p-val: %6.4f",
+    seq_along(x$t0), x$t0, colMeans(x$t), x$pvalue
+    ), "", sep = "\n")
+
+  invisible(x)
 
 }

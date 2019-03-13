@@ -1,5 +1,7 @@
+^README_cache$
 ^data-raw$
 ^README\.Rmd$
 ^LICENSE\.md$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^makefile$

@@ -2,8 +2,12 @@ Package: gnet
 Type: Package
 Title: What the Package Does (Title Case)
 Version: 0.1.0
-Authors@R: person("George", "Vega Yon", email="g.vegayon@gmail.com", role=c("aut", "cre"))
-Maintainer: The package maintainer <yourself@somewhere.net>
+Authors@R: c(
+      person(given = "George", family = "Vega Yon", role = c("cre","aut"),
+      email = "g.vegayon@gmail.com", comment = c(ORCID = "0000-0002-3171-0844")),
+      person("Army Research Laboratory and the U.S. Army Research Office",
+      role = "fnd", comment = "Grant Number W911NF-15-1-0577")
+      )
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: MIT + file LICENSE

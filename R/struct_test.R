@@ -32,17 +32,22 @@ struct_test.ergmito <- function(
   n     <- ergmito::nnets(x)
   sizes <- ergmito::nvertex(x)
 
-  # Updating the model
-  netmodel <- x$formulae$model
-  if (n == 1)
-    netmodel <- stats::update.formula(netmodel, x$network ~ .)
-  else
-    netmodel <- stats::update.formula(netmodel, x$network[[i]] ~ .)
 
-  environment(netmodel) <- environment()
 
   # Generating the sampler
   samplers <- parallel::mclapply(seq_len(n), function(i) {
+
+    # Updating the model
+    netmodel <- x$formulae$model
+    if (n == 1) {
+      netmodel <- stats::update.formula(netmodel, x$network ~ .)
+    } else {
+      netmodel <- stats::update.formula(netmodel, x$network[[i]] ~ .)
+    }
+
+    # Setting the environment as the current
+    environment(netmodel) <- environment()
+
     ergmito::new_rergmito(
       model = netmodel,
       theta = stats::coef(x)
@@ -107,24 +112,30 @@ struct_test. <- function(g, y, samplers, stat, R, mc.cores, alternative, ...) {
   # Step 1: Create the output vector
   t <- matrix(NA, nrow = R, ncol = length(t0), dimnames = list(NULL, names(t0)))
 
+  # Collecting seeds
   seed <- .Random.seed
+
+  # Obtaining a random sample for each sampler (indexes)
+  Idx <- lapply(samplers, function(s) {
+    s$sample(R, s$sizes[1L], as_indexes = TRUE)
+    })
+
+  Idx <- do.call(cbind, Idx)
 
   # Step 2: Iterative steps
   for (i in 1L:R) {
 
+    # Retrieving the current nets
+    nets_r <- Map(function(s, idx) s[idx, s$sizes[1L]][[1L]], s = samplers, idx = Idx[i,])
+    nets_r <- unlist(nets_r, recursive = FALSE)
+
     # Generating new random sample.
-    t[i, ] <- stat(
-      parallel::mclapply(
-        samplers, function(s) s$sample(1L, s$sizes[1L])[[1L]],
-        mc.cores = mc.cores
-        ),
-      y
-    )
+    t[i, ] <- stat(nets_r, y)
 
   }
 
   # Identifying complete obs
-  cobs <- which(complete.cases(t))
+  cobs <- which(stats::complete.cases(t))
 
   # Calculating p-value
   if (alternative == "two.sided") {
@@ -170,10 +181,10 @@ print.gnet_struct_test <- function(x, ...) {
 
   cat("Test of structural association between a network and a graph level outcome\n")
   cat(sprintf("# of obs: %i\n# of replicates: %i (%i used)\n", x$n, x$R, length(x$obs.used)))
-  cat("Alternative: %s\n", x$alternative)
+  cat(sprintf("Alternative: %s\n", x$alternative))
   cat(sprintf(
     "S[%i] s(obs): %6.4f s(sim): %6.4f p-val: %6.4f",
-    seq_along(x$t0), x$t0, colMeans(x$t), x$pvalue
+    seq_along(x$t0), x$t0, colMeans(x$t[x$obs.used,,drop=FALSE]), x$pvalue
     ), "", sep = "\n")
 
   invisible(x)

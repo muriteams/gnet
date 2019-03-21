@@ -22,10 +22,10 @@ The goal of gnet is to ...
 
 ## Installation
 
-You can install the released version of gnet from [CRAN](https://CRAN.R-project.org) with:
+~~You can install the released version of gnet from [CRAN](https://CRAN.R-project.org) with:~~
 
 ``` r
-install.packages("gnet")
+devtools::install_github("muriteams/gnet")
 ```
 
 ## Support
@@ -79,30 +79,36 @@ data(fivenets, package="ergmito")
 # We will generate a group level variable that is related to the proportion of
 # females in the group
 set.seed(52)
-y <- count_stats(fivenets ~ nodematch("female"))
-y <- y + rnorm(nnets(fivenets), sd = 2)
+y <- count_stats(fivenets ~ nodeocov("female"))
+y <- y + rnorm(nnets(fivenets))
 
 # Performing the struct test
-f02 <- function(g, y) cor(count_stats(g ~ nodematch("female")), y, use = "complete.obs")[1] 
+f02 <- function(g, y) cor(count_stats(g ~ nodeocov("female")), y, use = "complete.obs")[1] 
 mytest02 <- struct_test(
-  fivenets ~ edges + nodematch("female"), y = y, R=2000,
+  fivenets ~ edges + nodematch("female"), y = y, R=3000,
   stat = f02
   )
 mytest02
-
-hist(mytest02$t, breaks=10, col="gray", border="transparent")
-abline(v = mytest02$t0, col="steelblue", lwd=2, lty="dashed")
 ```
 
-What would have we got if we use correlation or a linear regression only?
+What would have we got if we use a linear regression only?
 
-```{r}
-# Pearson correlation
-x <- count_stats(fivenets ~ nodematch("female"))
-
-cor.test(x, y)
+```{r ols}
+# Li
+x <- count_stats(fivenets ~ nodeocov("female"))
 summary(lm(y ~ x))
 ```
+
+```{r plot-comparison}
+op <- par(mfrow=c(1, 2))
+hist(mytest02$t, breaks=50, col="gray", border="transparent", main = "Null distribution of t",
+     xlab = "Values of t")
+abline(v = mytest02$t0, col="steelblue", lwd=2, lty="dashed")
+plot(y ~ x, main = "Linear regression", xlab="nodeocov(\"female\")", ylab = "y")
+abline(lm(y~x), lty="dashed", lwd=2)
+par(op)
+```
+
 
 In this case, the test has higher power than the other 2.
 

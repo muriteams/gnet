@@ -106,6 +106,21 @@ struct_test.formula <- function(
 
 struct_test. <- function(g, y, samplers, stat, R, mc.cores, alternative, ...) {
 
+  # Checking alternatives
+  if (!is.character(alternative))
+    stop("The `alternative` parameter must be a character scalar.", call. = FALSE)
+
+  if (length(alternative) != 1)
+    stop("The `alternative` parameter should be a character scalar.",
+         " The passed value has a length different from 1.", call. = FALSE)
+
+  if (!(alternative %in% c("less", "greater", "two.sided")))
+    stop("Invalid `alternative` value. It must be either \"",
+         paste(c("less", "greater", "two.sided"), collapse="\", \""), "\"",
+
+         call. = FALSE
+    )
+
   # Step 0: Computing observed statistic
   t0 <- stat(g, y)
 

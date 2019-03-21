@@ -9,11 +9,11 @@ The goal of gnet is to …
 
 ## Installation
 
-You can install the released version of gnet from
-[CRAN](https://CRAN.R-project.org) with:
+~~You can install the released version of gnet from
+[CRAN](https://CRAN.R-project.org) with:~~
 
 ``` r
-install.packages("gnet")
+devtools::install_github("muriteams/gnet")
 ```
 
 ## Support
@@ -74,52 +74,28 @@ data(fivenets, package="ergmito")
 # We will generate a group level variable that is related to the proportion of
 # females in the group
 set.seed(52)
-y <- count_stats(fivenets ~ nodematch("female"))
-y <- y + rnorm(nnets(fivenets), sd = 2)
+y <- count_stats(fivenets ~ nodeocov("female"))
+y <- y + rnorm(nnets(fivenets))
 
 # Performing the struct test
-f02 <- function(g, y) cor(count_stats(g ~ nodematch("female")), y, use = "complete.obs")[1] 
+f02 <- function(g, y) cor(count_stats(g ~ nodeocov("female")), y, use = "complete.obs")[1] 
 mytest02 <- struct_test(
-  fivenets ~ edges + nodematch("female"), y = y, R=2000,
+  fivenets ~ edges + nodematch("female"), y = y, R=3000,
   stat = f02
   )
-#> Warning in cor(count_stats(g ~ nodematch("female")), y, use =
-#> "complete.obs"): the standard deviation is zero
-
-#> Warning in cor(count_stats(g ~ nodematch("female")), y, use =
-#> "complete.obs"): the standard deviation is zero
 mytest02
 #> Test of structural association between a network and a graph level outcome
 #> # of obs: 5
-#> # of replicates: 2000 (1998 used)
+#> # of replicates: 3000 (3000 used)
 #> Alternative: two.sided
-#> S[1] s(obs): 0.8624 s(sim): 0.2631 p-val: 0.0210
-
-hist(mytest02$t, breaks=10, col="gray", border="transparent")
-abline(v = mytest02$t0, col="steelblue", lwd=2, lty="dashed")
+#> S[1] s(obs): 0.5742 s(sim): -0.1181 p-val: 0.0460
 ```
 
-<img src="man/figures/README-fivenets-1.png" width="100%" />
-
-What would have we got if we use correlation or a linear regression
-only?
+What would have we got if we use a linear regression only?
 
 ``` r
-# Pearson correlation
-x <- count_stats(fivenets ~ nodematch("female"))
-
-cor.test(x, y)
-#> 
-#>  Pearson's product-moment correlation
-#> 
-#> data:  x and y
-#> t = 2.9513, df = 3, p-value = 0.05996
-#> alternative hypothesis: true correlation is not equal to 0
-#> 95 percent confidence interval:
-#>  -0.08290487  0.99080307
-#> sample estimates:
-#>       cor 
-#> 0.8624443
+# Li
+x <- count_stats(fivenets ~ nodeocov("female"))
 summary(lm(y ~ x))
 #> 
 #> Call:
@@ -127,18 +103,31 @@ summary(lm(y ~ x))
 #> 
 #> Residuals:
 #>       1       2       3       4       5 
-#> -0.2304 -2.1519  3.3243  0.5473 -1.4894 
+#> -0.6817 -0.2262  1.7489  0.9875 -1.8286 
 #> 
 #> Coefficients:
-#>             Estimate Std. Error t value Pr(>|t|)  
-#> (Intercept)  -3.8115     2.4666  -1.545     0.22  
-#> x             2.0347     0.6894   2.951     0.06 .
-#> ---
-#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#>             Estimate Std. Error t value Pr(>|t|)
+#> (Intercept) -0.03279    1.34965  -0.024    0.982
+#> x            0.86414    0.71133   1.215    0.311
 #> 
-#> Residual standard error: 2.467 on 3 degrees of freedom
-#> Multiple R-squared:  0.7438, Adjusted R-squared:  0.6584 
-#> F-statistic:  8.71 on 1 and 3 DF,  p-value: 0.05996
+#> Residual standard error: 1.622 on 3 degrees of freedom
+#> Multiple R-squared:  0.3297, Adjusted R-squared:  0.1063 
+#> F-statistic: 1.476 on 1 and 3 DF,  p-value: 0.3113
+```
+
+``` r
+op <- par(mfrow=c(1, 2))
+hist(mytest02$t, breaks=50, col="gray", border="transparent", main = "Null distribution of t",
+     xlab = "Values of t")
+abline(v = mytest02$t0, col="steelblue", lwd=2, lty="dashed")
+plot(y ~ x, main = "Linear regression", xlab="nodeocov(\"female\")", ylab = "y")
+abline(lm(y~x), lty="dashed", lwd=2)
+```
+
+<img src="man/figures/README-plot-comparison-1.png" width="100%" />
+
+``` r
+par(op)
 ```
 
 In this case, the test has higher power than the other 2.

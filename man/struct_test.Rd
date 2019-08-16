@@ -8,17 +8,17 @@
 \alias{print.gnet_struct_test}
 \title{Semiparametric test of structural dependence}
 \usage{
-struct_test(x, y, stat, R, mc.cores = 2L, verbose = TRUE,
+struct_test(x, y, stat, R, mc.cores = 1L, verbose = TRUE,
   alternative = "two.sided", ...)
 
-\method{struct_test}{ergmito}(x, y, stat, R, mc.cores = 2L,
+\method{struct_test}{ergmito}(x, y, stat, R, mc.cores = 1L,
   verbose = TRUE, alternative = "two.sided", ...)
 
-\method{struct_test}{list}(x, y, stat, R, mc.cores = 2L,
+\method{struct_test}{list}(x, y, stat, R, mc.cores = 1L,
   verbose = TRUE, alternative = "two.sided", ergmito.args = list(),
   ...)
 
-\method{struct_test}{formula}(x, y, stat, R, mc.cores = 2L,
+\method{struct_test}{formula}(x, y, stat, R, mc.cores = 1L,
   verbose = TRUE, alternative = "two.sided", ergmito.args = list(),
   ...)
 

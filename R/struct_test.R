@@ -14,7 +14,7 @@
 #'
 #' @export
 struct_test <- function(
-  x, y, stat,  R, mc.cores = 2L, verbose = TRUE,
+  x, y, stat,  R, mc.cores = 1L, verbose = TRUE,
   alternative = "two.sided",
   ...
   ) {
@@ -24,7 +24,7 @@ struct_test <- function(
 #' @export
 #' @rdname struct_test
 struct_test.ergmito <- function(
-  x, y, stat, R, mc.cores = 2L, verbose = TRUE,
+  x, y, stat, R, mc.cores = 1L, verbose = TRUE,
   alternative = "two.sided",
   ...
   ) {
@@ -64,7 +64,7 @@ struct_test.ergmito <- function(
 #' @export
 #' @rdname struct_test
 struct_test.list <- function(
-  x, y, stat, R, mc.cores = 2L, verbose = TRUE,
+  x, y, stat, R, mc.cores = 1L, verbose = TRUE,
   alternative = "two.sided", ergmito.args = list(), ...
   ) {
 
@@ -91,7 +91,7 @@ struct_test.list <- function(
 #' @param ergmito.args A list with arguments passed to [ergmito::ergmito].
 #' @rdname  struct_test
 struct_test.formula <- function(
-  x, y, stat, R, mc.cores = 2L, verbose = TRUE,
+  x, y, stat, R, mc.cores = 1L, verbose = TRUE,
   alternative = "two.sided", ergmito.args = list(), ...
   ) {
 

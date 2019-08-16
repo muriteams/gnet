@@ -2,6 +2,10 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 [![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![Travis build
+status](https://travis-ci.org/muriteams/gnet.svg?branch=master)](https://travis-ci.org/muriteams/gnet)
+[![Build
+status](https://ci.appveyor.com/api/projects/status/0w08vtiu0wul6blj?svg=true)](https://ci.appveyor.com/project/gvegayon/gnet)
 
 # gnet
 
@@ -43,6 +47,9 @@ nets <- rbernoulli(c(3,3,4,4,4))
 fun <- function(g, y) mean(count_stats(g, "edges") - y, na.rm = TRUE)
 
 mytest01 <- struct_test(nets ~ edges + balance, y = runif(5), R=1000, stat=fun)
+#> Warning: The observed statistics (target.statistics) are near or at
+#> theboundary of its support, i.e. the Maximum Likelihood Estimates maynot
+#> exist or be hard to be estimated. In particular, the statistics "balance".
 ```
 
 ``` r
@@ -51,7 +58,7 @@ mytest01
 #> # of obs: 5
 #> # of replicates: 1000 (1000 used)
 #> Alternative: two.sided
-#> S[1] s(obs): 4.6689 s(sim): 4.6931 p-val: 0.9080
+#> S[1] s(obs): 4.7347 s(sim): 4.7169 p-val: 0.8660
 ```
 
 ``` r
@@ -88,7 +95,7 @@ mytest02
 #> # of obs: 5
 #> # of replicates: 3000 (3000 used)
 #> Alternative: two.sided
-#> S[1] s(obs): 0.5742 s(sim): -0.1181 p-val: 0.0460
+#> S[1] s(obs): 0.5742 s(sim): -0.1120 p-val: 0.0347
 ```
 
 What would have we got if we use a linear regression only?

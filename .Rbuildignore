@@ -5,3 +5,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^makefile$
+^\.travis\.yml$
+^appveyor\.yml$
+^paper$
+^playground$
